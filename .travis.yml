@@ -4,7 +4,7 @@ compiler:
   - clang
 install:
   - sudo apt-get update
-  #- sudo apt-get install liblapack-dev liblas-dev
+  - sudo apt-get install libglew-dev
   ## from https://github.com/travis-ci/travis-ci/issues/979.
   #- sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   #- sudo apt-get update -qq
