@@ -1,0 +1,18 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+install:
+  - sudo apt-get update
+  #- sudo apt-get install liblapack-dev liblas-dev
+  ## from https://github.com/travis-ci/travis-ci/issues/979.
+  #- sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  #- sudo apt-get update -qq
+  #- if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  #- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+script:
+  - echo "CXX="$CXX
+  - echo "CC="$CC
+  - cmake . -G "Unix Makefiles" -DCMAKE_CXX_FLAGS=-Werror
+  - make -j8
+  - ctest -j8
