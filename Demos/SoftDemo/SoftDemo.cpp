@@ -470,13 +470,23 @@ static btSoftBody* Ctor_SoftBoulder(SoftDemo* pdemo,const btVector3& p,const btV
 static void	Init_Ropes(SoftDemo* pdemo)
 {
 	//TRACEDEMO
+  // number of ropes
 	const int n=15;
+  // rope segments
+  const int rope_segments = 46;
+  // fixed from
+  const int fixed_from = 0x01;
+  // fixed to
+  const int fixed_to = 0x02;
+  // fix both ends of rope
+  int fixed_both = fixed_from | fixed_to;
+
 	for(int i=0;i<n;++i)
 	{
 		btSoftBody*	psb=btSoftBodyHelpers::CreateRope(pdemo->m_softBodyWorldInfo,	btVector3(-10,0,i*0.25),
 			btVector3(10,0,i*0.25),
-			16,
-			1+2);
+			rope_segments,
+			fixed_from);
 		psb->m_cfg.piterations		=	4;
 		psb->m_materials[0]->m_kLST	=	0.1+(i/(btScalar)(n-1))*0.9;
 		psb->setTotalMass(20);
