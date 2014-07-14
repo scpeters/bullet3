@@ -52,7 +52,7 @@ static btRigidBody* staticBody = 0;
 static float waveheight = 5.f;
 
 const float TRIANGLE_SIZE=8.f;
-int		current_demo=20;
+int		current_demo=4;
 #define DEMO_MODE_TIMEOUT 15.f //15 seconds for each demo
 
 
@@ -506,18 +506,20 @@ static void	Init_RopeAttach(SoftDemo* pdemo)
 	{
 		static btSoftBody* CtorRope(SoftDemo* pdemo,const btVector3& p)
 		{
-			btSoftBody*	psb=btSoftBodyHelpers::CreateRope(pdemo->m_softBodyWorldInfo,p,p+btVector3(10,0,0),8,1);
-			psb->setTotalMass(50);
+			btSoftBody*	psb=btSoftBodyHelpers::CreateRope(pdemo->m_softBodyWorldInfo,p,p+btVector3(0,-8,0),8,1);
+			psb->setTotalMass(5);
 			pdemo->getSoftDynamicsWorld()->addSoftBody(psb);
 			return(psb);
 		}
 	};
 	btTransform startTransform;
 	startTransform.setIdentity();
-	startTransform.setOrigin(btVector3(12,8,0));
-	btRigidBody*		body=pdemo->localCreateRigidBody(50,startTransform,new btBoxShape(btVector3(2,6,2)));
-	btSoftBody*	psb0=Functors::CtorRope(pdemo,btVector3(0,8,-1));
-	btSoftBody*	psb1=Functors::CtorRope(pdemo,btVector3(0,8,+1));
+	startTransform.setOrigin(btVector3(0,6,0));
+  startTransform.setRotation(btQuaternion(0, SIMD_PI/2, 0));
+	btRigidBody*		body=pdemo->localCreateRigidBody(50,startTransform,new btCylinderShape(btVector3(2,6,2)));
+  body->applyTorque(btVector3(0, 0, -1e3));
+	btSoftBody*	psb0=Functors::CtorRope(pdemo,btVector3(0,16,-3));
+	btSoftBody*	psb1=Functors::CtorRope(pdemo,btVector3(0,16,+3));
 	psb0->appendAnchor(psb0->m_nodes.size()-1,body);
 	psb1->appendAnchor(psb1->m_nodes.size()-1,body);
 }
