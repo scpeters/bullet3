@@ -52,7 +52,7 @@ static btRigidBody* staticBody = 0;
 static float waveheight = 5.f;
 
 const float TRIANGLE_SIZE=8.f;
-int		current_demo=20;
+int		current_demo=4;
 #define DEMO_MODE_TIMEOUT 15.f //15 seconds for each demo
 
 
@@ -494,22 +494,64 @@ static void	Init_RopeAttach(SoftDemo* pdemo)
 	pdemo->m_softBodyWorldInfo.m_sparsesdf.RemoveReferences(0);
 	struct	Functors
 	{
-		static btSoftBody* CtorRope(SoftDemo* pdemo,const btVector3& p)
+		static btSoftBody* CtorRope(SoftDemo* pdemo
+                              , const btVector3 & _start
+                              , const btVector3 & _end
+                              )
 		{
-			btSoftBody*	psb=btSoftBodyHelpers::CreateRope(pdemo->m_softBodyWorldInfo,p,p+btVector3(10,0,0),8,1);
-			psb->setTotalMass(50);
+      int ropeSegments = 48;
+			btSoftBody*	psb=btSoftBodyHelpers::CreateRope(pdemo->m_softBodyWorldInfo, _start, _end, ropeSegments,1);
+			psb->setTotalMass(5);
 			pdemo->getSoftDynamicsWorld()->addSoftBody(psb);
 			return(psb);
 		}
 	};
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(btVector3(12,8,0));
-	btRigidBody*		body=pdemo->localCreateRigidBody(50,startTransform,new btBoxShape(btVector3(2,6,2)));
-	btSoftBody*	psb0=Functors::CtorRope(pdemo,btVector3(0,8,-1));
-	btSoftBody*	psb1=Functors::CtorRope(pdemo,btVector3(0,8,+1));
-	psb0->appendAnchor(psb0->m_nodes.size()-1,body);
-	psb1->appendAnchor(psb1->m_nodes.size()-1,body);
+  // cylinder
+  btScalar width  = 5.0;
+  btScalar radius = 2.0;
+  // rope location / length
+  btScalar x0 = -15.0;
+  btScalar height = 14.0;
+  btScalar length = 10.0 - x0;
+
+	btSoftBody*	psb0=Functors::CtorRope(pdemo,btVector3(x0, height, -width), btVector3(length, height, -width));
+	btSoftBody*	psb1=Functors::CtorRope(pdemo,btVector3(x0, height, +width), btVector3(length, height, +width));
+  psb0->m_cfg.piterations		=	150;
+  psb1->m_cfg.piterations		=	150;
+
+  {
+	  btTransform startTransform;
+	  startTransform.setIdentity();
+	  startTransform.setOrigin(btVector3(length + 0*radius, height, 0));
+	  btRigidBody*		body=pdemo->localCreateRigidBody(50,startTransform,
+                            new btCylinderShapeZ(btVector3(radius, radius, width*0.85)));
+	  psb0->appendAnchor(psb0->m_nodes.size()-1,body);
+	  psb1->appendAnchor(psb1->m_nodes.size()-1,body);
+  }
+
+  // static
+  for (int i = -1; i <= 1; i += 2)
+  {
+	  btTransform staticTransform;
+	  staticTransform.setIdentity();
+	  staticTransform.setOrigin(btVector3(i*x0*0.7, height -radius, 0));
+	  btRigidBody*		body=pdemo->localCreateRigidBody(50,staticTransform,
+                            new btCylinderShapeZ(btVector3(radius, radius, width*1.5)));
+    btHingeConstraint* hinge = new btHingeConstraint(*body,btVector3(0,0,0),btVector3(0,0,1),true);
+    pdemo->getDynamicsWorld()->addConstraint(hinge);
+  }
+  {
+	  btTransform startTransform;
+	  startTransform.setIdentity();
+	  startTransform.setOrigin(btVector3(0.0, (height+radius) * 1.3, 0));
+	  btRigidBody*		body=pdemo->localCreateRigidBody(60,startTransform,
+                            new btCylinderShapeZ(btVector3(radius, radius, width*1.2)));
+    btTransform sliderTransform;
+    sliderTransform.setIdentity();
+    sliderTransform.setRotation(btQuaternion(btVector3(0,0,1), SIMD_HALF_PI));
+    btSliderConstraint* slider = new btSliderConstraint(*body,sliderTransform,true);
+    pdemo->getDynamicsWorld()->addConstraint(slider);
+  }
 }
 
 //
